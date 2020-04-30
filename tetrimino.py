@@ -41,7 +41,8 @@ class Tetrimino():
         """Initialize the tetrimino."""
         self.shape = shape.value
         self._grid = grid._grid
-        self.location = (4, 15)
+        self.x = 4
+        self.y = 15
 
         self.left_pressed = False
         self.right_pressed = False
@@ -89,24 +90,26 @@ class Tetrimino():
             self.right_pressed = False
         elif symbol == arcade.key.DOWN:
             self.down_pressed = False
+        elif symbol == arcade.key.SPACE:
+            self.add_tetrimino_to_grid()
 
     def move_left(self):
         """Move X coordinate of tetrimino location to the left."""
-        new_location_attempt = (self.location[0] - 1, self.location[1])
-        if not self.is_collision_on_move(new_location_attempt):
-            self.location = new_location_attempt
+        new_x, new_y = self.x - 1, self.y
+        if not self.is_collision_on_move(new_x, new_y):
+            self.x, self.y = new_x, new_y
 
     def move_right(self):
         """Move X coordinate of tetrimino location to the right."""
-        new_location_attempt = (self.location[0] + 1, self.location[1])
-        if not self.is_collision_on_move(new_location_attempt):
-            self.location = new_location_attempt
+        new_x, new_y = self.x + 1, self.y
+        if not self.is_collision_on_move(new_x, new_y):
+            self.x, self.y = new_x, new_y
 
     def move_down(self):
         """Move Y coordinate of tetrimino location down."""
-        new_location_attempt = (self.location[0], self.location[1] - 1)
-        if not self.is_collision_on_move(new_location_attempt):
-            self.location = new_location_attempt
+        new_x, new_y = self.x, self.y - 1
+        if not self.is_collision_on_move(new_x, new_y):
+            self.x, self.y = new_x, new_y
 
     def rotate_clockwise(self):
         """Rotate the tetrimino clockwise."""
@@ -118,7 +121,7 @@ class Tetrimino():
         """Rotate the tetrimino counter-clockwise."""
         self.shape = list(reversed(list(zip(*self.shape))))
 
-    def is_collision_on_move(self, new_location):
+    def is_collision_on_move(self, new_x, new_y):
         """Check for collision with a proposed new location.
 
         Arguments:
@@ -129,7 +132,7 @@ class Tetrimino():
         """
         for i, row in enumerate(reversed(self.shape)):
             for j, column in enumerate(row):
-                if self._grid[new_location[1] + i][new_location[0] + j] + row[j] >= 2:
+                if self._grid[new_y + i][new_x + j] + row[j] >= 2:
                     return True
         return False
 
@@ -144,7 +147,7 @@ class Tetrimino():
         """
         for i, row in enumerate(reversed(new_shape)):
             for j, column in enumerate(row):
-                if self._grid[self.location[1] + i][self.location[0] + j] + row[j] >= 2:
+                if self._grid[self.y + i][self.x + j] + row[j] >= 2:
                     return True
         return False
 
@@ -166,10 +169,18 @@ class Tetrimino():
         for i, row in enumerate(reversed(self.shape)):
             for j, column in enumerate(row):
                 if column == 1:
-                    x = SIDE_MARGIN + (j + self.location[0]) * 24
-                    y = BOTTOM_MARGIN + (i + self.location[1]) * 24
+                    x = SIDE_MARGIN + (j + self.x) * 24
+                    y = BOTTOM_MARGIN + (i + self.y) * 24
                     arcade.draw_rectangle_filled(x, y, 24, 24, arcade.color.WHITE)
                     arcade.draw_rectangle_outline(x, y, 24, 24, arcade.color.BLACK)
+
+    def add_tetrimino_to_grid(self):
+        for i, row in enumerate(reversed(self.shape)):
+            for j, column in enumerate(row):
+                y = self.y + i
+                x = self.x + j
+                if x != 0 and x != 11 and y != 0:
+                    self._grid[self.y + i][self.x + j] = row[j]
 
     def __str__(self):
         return '\n'.join([str(x) for x in self.shape])
