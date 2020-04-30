@@ -16,7 +16,7 @@ class Tetris(arcade.Window):
         self.paused = False
 
         self.grid = Grid()
-        self.t = Tetrimino(Shape.Z)
+        self.t = Tetrimino(Shape.T, self.grid)
 
         # Diagnostics
         self.diagnostics = False
@@ -46,6 +46,10 @@ class Tetris(arcade.Window):
 
         if symbol == arcade.key.D:
             self.diagnostics = not self.diagnostics
+
+        if symbol == arcade.key.P:
+            print(self.grid)
+            print(self.t)
 
         self.t.on_key_press(symbol, modifiers)
 

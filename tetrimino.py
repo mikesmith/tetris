@@ -5,67 +5,43 @@ from constants import SIDE_MARGIN, BOTTOM_MARGIN
 
 
 class Shape(Enum):
-    O = ([[0, 1, 1],
-          [0, 1, 1],
-          [0, 0, 0]],
-         1,
-         2,
-         1)
+    O = [[0, 1, 1],
+         [0, 1, 1],
+         [0, 0, 0]]
 
-    I = ([[0, 0, 0, 0],
-          [1, 1, 1, 1],
-          [0, 0, 0, 0],
-          [0, 0, 0, 0]],
-         0,
-         3,
-         2)
+    I = [[0, 0, 0, 0],
+         [1, 1, 1, 1],
+         [0, 0, 0, 0],
+         [0, 0, 0, 0]]
 
-    T = ([[0, 1, 0],
-          [1, 1, 1],
-          [0, 0, 0]],
-         0,
-         2,
-         1)
+    T = [[0, 1, 0],
+         [1, 1, 1],
+         [0, 0, 0]]
 
-    L = ([[0, 0, 1],
-          [1, 1, 1],
-          [0, 0, 0]],
-         0,
-         2,
-         1)
+    L = [[0, 0, 1],
+         [1, 1, 1],
+         [0, 0, 0]]
 
-    J = ([[1, 0, 0],
-          [1, 1, 1],
-          [0, 0, 0]],
-         0,
-         2,
-         1)
+    J = [[1, 0, 0],
+         [1, 1, 1],
+         [0, 0, 0]]
 
-    S = ([[0, 1, 1],
-          [1, 1, 0],
-          [0, 0, 0]],
-         0,
-         2,
-         1)
+    S = [[0, 1, 1],
+         [1, 1, 0],
+         [0, 0, 0]]
 
-    Z = ([[1, 1, 0],
-          [0, 1, 1],
-          [0, 0, 0]],
-         0,
-         2,
-         1)
+    Z = [[1, 1, 0],
+         [0, 1, 1],
+         [0, 0, 0]]
 
 
 class Tetrimino():
 
-    def __init__(self, shape):
+    def __init__(self, shape, grid):
         """Initialize the tetrimino."""
-        self.shape = shape.value[0]
+        self.shape = shape.value
+        self._grid = grid._grid
         self.location = (4, 15)
-
-        self.left = shape.value[1]
-        self.right = shape.value[2]
-        self.bottom = shape.value[3]
 
         self.left_pressed = False
         self.right_pressed = False
@@ -113,64 +89,64 @@ class Tetrimino():
             self.right_pressed = False
         elif symbol == arcade.key.DOWN:
             self.down_pressed = False
-        elif symbol == arcade.key.UP:
-            self.up_pressed = False
 
     def move_left(self):
         """Move X coordinate of tetrimino location to the left."""
-        if not self.left_blocked():
-            self.location = (self.location[0] - 1, self.location[1])
-
-    def left_blocked(self):
-        """Check if the tetrimino is blocked from moving left.
-
-        Returns:
-            bool -- True if blocked. False otherwise.
-        """
-        blocked = False
-        if self.location[0] + self.left <= 0:
-            blocked = True
-        return blocked
+        new_location_attempt = (self.location[0] - 1, self.location[1])
+        if not self.is_collision_on_move(new_location_attempt):
+            self.location = new_location_attempt
 
     def move_right(self):
         """Move X coordinate of tetrimino location to the right."""
-        if not self.right_blocked():
-            self.location = (self.location[0] + 1, self.location[1])
-
-    def right_blocked(self):
-        """Check if the tetrimino is blocked from moving right.
-
-        Returns:
-            bool -- True if blocked. False otherwise.
-        """
-        blocked = False
-        if self.location[0] + self.right >= 9:
-            blocked = True
-        return blocked
+        new_location_attempt = (self.location[0] + 1, self.location[1])
+        if not self.is_collision_on_move(new_location_attempt):
+            self.location = new_location_attempt
 
     def move_down(self):
         """Move Y coordinate of tetrimino location down."""
-        if not self.down_blocked():
-            self.location = (self.location[0], self.location[1] - 1)
-
-    def down_blocked(self):
-        """Check if the tetrimino is blocked from moving down.
-
-        Returns:
-            bool -- True if blocked. False otherwise.
-        """
-        blocked = False
-        if self.location[1] + self.bottom <= 0:
-            blocked = True
-        return blocked
+        new_location_attempt = (self.location[0], self.location[1] - 1)
+        if not self.is_collision_on_move(new_location_attempt):
+            self.location = new_location_attempt
 
     def rotate_clockwise(self):
         """Rotate the tetrimino clockwise."""
-        self.shape = list(zip(*reversed(self.shape)))
+        shape_attempt = list(zip(*reversed(self.shape)))
+        if not self.is_collision_on_rotate(shape_attempt):
+            self.shape = shape_attempt
 
     def rotate_counter_clockwise(self):
         """Rotate the tetrimino counter-clockwise."""
         self.shape = list(reversed(list(zip(*self.shape))))
+
+    def is_collision_on_move(self, new_location):
+        """Check for collision with a proposed new location.
+
+        Arguments:
+            new_location {(x, y)} -- The x,y coordinates of proposed location
+
+        Returns:
+            bool -- True if a collision is detected. False, otherwise.
+        """
+        for i, row in enumerate(reversed(self.shape)):
+            for j, column in enumerate(row):
+                if self._grid[new_location[1] + i][new_location[0] + j] + row[j] >= 2:
+                    return True
+        return False
+
+    def is_collision_on_rotate(self, new_shape):
+        """Check for collision with a proposed new shape.
+
+        Arguments:
+            new_shape {[[]]} -- The proposed shape after rotation
+
+        Returns:
+            bool -- True if a collision is detected. False, otherwise.
+        """
+        for i, row in enumerate(reversed(new_shape)):
+            for j, column in enumerate(row):
+                if self._grid[self.location[1] + i][self.location[0] + j] + row[j] >= 2:
+                    return True
+        return False
 
     def on_update(self, delta_time: float):
         """Update the position and status of the tetrimino.
@@ -194,3 +170,6 @@ class Tetrimino():
                     y = BOTTOM_MARGIN + (i + self.location[1]) * 24
                     arcade.draw_rectangle_filled(x, y, 24, 24, arcade.color.WHITE)
                     arcade.draw_rectangle_outline(x, y, 24, 24, arcade.color.BLACK)
+
+    def __str__(self):
+        return '\n'.join([str(x) for x in self.shape])
