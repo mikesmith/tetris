@@ -1,5 +1,6 @@
 import arcade
 import timeit
+import random
 
 from constants import SCALING, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_TITLE
 from grid import Grid
@@ -40,6 +41,9 @@ class Tetris(arcade.Window):
 
         if symbol == arcade.key.ESCAPE:
             self.paused = not self.paused
+
+        if symbol == arcade.key.ENTER:
+            self.t = Tetrimino(random.choice(list(Shape)), self.grid)
 
         if symbol == arcade.key.F1:
             self.paused = not self.paused

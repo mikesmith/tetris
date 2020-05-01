@@ -1,7 +1,7 @@
 import arcade
 from enum import Enum
 
-from constants import SIDE_MARGIN, BOTTOM_MARGIN
+from constants import SIDE_MARGIN, BOTTOM_MARGIN, WHITE, BLACK
 
 
 class Shape(Enum):
@@ -41,6 +41,9 @@ class Tetrimino():
         """Initialize the tetrimino."""
         self.shape = shape.value
         self._grid = grid._grid
+        self.grid = grid
+
+        # Initial position (Temporary until spawning implemented)
         self.x = 4
         self.y = 15
 
@@ -171,16 +174,19 @@ class Tetrimino():
                 if column == 1:
                     x = SIDE_MARGIN + (j + self.x) * 24
                     y = BOTTOM_MARGIN + (i + self.y) * 24
-                    arcade.draw_rectangle_filled(x, y, 24, 24, arcade.color.WHITE)
-                    arcade.draw_rectangle_outline(x, y, 24, 24, arcade.color.BLACK)
+                    arcade.draw_rectangle_filled(x, y, 24, 24, WHITE)
+                    arcade.draw_rectangle_outline(x, y, 24, 24, BLACK)
 
     def add_tetrimino_to_grid(self):
         for i, row in enumerate(reversed(self.shape)):
             for j, column in enumerate(row):
                 y = self.y + i
                 x = self.x + j
-                if x != 0 and x != 11 and y != 0:
+
+                if x != 0 and x != 11 and y != 0 and row[j] != 0:
                     self._grid[self.y + i][self.x + j] = row[j]
+
+        self.grid.refresh()
 
     def __str__(self):
         return '\n'.join([str(x) for x in self.shape])
