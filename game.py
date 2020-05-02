@@ -15,6 +15,7 @@ class Tetris(arcade.Window):
         arcade.set_background_color(arcade.color.GRAY)
 
         self.paused = False
+        self.game_over = False
 
         self.grid = Grid()
         self.t = None
@@ -81,11 +82,16 @@ class Tetris(arcade.Window):
         # or create a new piece
         if self.grid.refreshed:
             if self.t and self.t.locked_out:
-                self.game_over()
+                self.game_over = True
             self.t = Tetrimino(random.choice(list(Shape)), self.grid)
+            if self.t.blocked_out:
+                self.game_over = True
             self.grid.refreshed = False
 
         self.t.on_update(delta_time)
+
+        if self.game_over:
+            self.trigger_game_over()
 
     def on_draw(self):
         """Draw all game objects."""
@@ -132,7 +138,7 @@ class Tetris(arcade.Window):
 
         self.draw_time = timeit.default_timer() - draw_start_time
 
-    def game_over(self):
+    def trigger_game_over(self):
         """Game Over."""
         print('Game Over')
         # Quit immediately

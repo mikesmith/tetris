@@ -44,15 +44,19 @@ class Tetrimino():
         self._grid = grid._grid
         self.grid = grid
 
+        self.down_pressed = False
+
+        # Timers
         self.move_down_timer = datetime.now()
         self.lock_down_timer = None
-        self.locked_out = False
 
-        # Initial position (Temporary until spawning implemented)
+        # Initial Position
         self.x = 4
         self.y = 20
 
-        self.down_pressed = False
+        # Failure flags
+        self.locked_out = False
+        self.blocked_out = self.is_blocked_out()
 
     def on_key_press(self, symbol: int, modifiers: int):
         """Handle user keyboard input.
@@ -124,6 +128,14 @@ class Tetrimino():
     def rotate_counter_clockwise(self):
         """Rotate the tetrimino counter-clockwise."""
         self.shape = list(reversed(list(zip(*self.shape))))
+
+    def is_blocked_out(self):
+        """Check if Tetrimino is colliding in current position.
+
+        Return:
+            bool -- True is collision is detected. False, otherwise.
+        """
+        return self.is_collision_on_move(self.x, self.y)
 
     def is_collision_on_move(self, new_x, new_y):
         """Check for collision with a proposed new location.
