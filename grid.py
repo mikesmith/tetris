@@ -6,7 +6,7 @@ from constants import SIDE_MARGIN, BOTTOM_MARGIN, WHITE_SMOKE, DARK_GRAY, BLACK
 class Grid():
 
     def __init__(self):
-        self._grid = [[0]*12 for y in range(23)]
+        self._grid = [[0]*12 for y in range(24)]
         self.refreshed = False
         self.refresh()
 

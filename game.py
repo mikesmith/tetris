@@ -69,14 +69,19 @@ class Tetris(arcade.Window):
 
         If paused, do nothing
 
+        Check the Matrix and current Tetrimino status for game updates
+
         Arguments:
             delta_time {float} -- Time since the last update
         """
         if self.paused:
             return
 
-        # When a grid is refreshed, a new random Tetrimino needs to spawn
+        # When the Matrix is refreshed, check if Tetrimino is locked out
+        # or create a new piece
         if self.grid.refreshed:
+            if self.t and self.t.locked_out:
+                self.game_over()
             self.t = Tetrimino(random.choice(list(Shape)), self.grid)
             self.grid.refreshed = False
 
@@ -126,6 +131,12 @@ class Tetris(arcade.Window):
                                  12)
 
         self.draw_time = timeit.default_timer() - draw_start_time
+
+    def game_over(self):
+        """Game Over."""
+        print('Game Over')
+        # Quit immediately
+        arcade.close_window()  # TODO: Implement Game Over Screen
 
 
 if __name__ == '__main__':

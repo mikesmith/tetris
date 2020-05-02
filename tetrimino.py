@@ -44,8 +44,9 @@ class Tetrimino():
         self._grid = grid._grid
         self.grid = grid
 
-        self.move_timer = datetime.now()
-        self.lock_timer = None
+        self.move_down_timer = datetime.now()
+        self.lock_down_timer = None
+        self.locked_out = False
 
         # Initial position (Temporary until spawning implemented)
         self.x = 4
@@ -111,8 +112,8 @@ class Tetrimino():
         new_x, new_y = self.x, self.y - 1
         if not self.is_collision_on_move(new_x, new_y):
             self.x, self.y = new_x, new_y
-        elif not self.lock_timer:
-            self.lock_timer = datetime.now()
+        elif not self.lock_down_timer:
+            self.lock_down_timer = datetime.now()
 
     def rotate_clockwise(self):
         """Rotate the tetrimino clockwise."""
@@ -163,14 +164,14 @@ class Tetrimino():
         if self.down_pressed:
             self.move_down()
 
-        if self.lock_timer:
-            if self.time_delta_ms(self.lock_timer) >= 500:
-                self.add_tetrimino_to_grid()
-                self.lock_timer = None
+        if self.lock_down_timer:
+            if self.time_delta_ms(self.lock_down_timer) >= 500:
+                self.lock_down()
+                self.lock_down_timer = None
 
-        if self.time_delta_ms(self.move_timer) >= 1000:
+        if self.time_delta_ms(self.move_down_timer) >= 1000:
             self.move_down()
-            self.move_timer = datetime.now()
+            self.move_down_timer = datetime.now()
 
     def time_delta_ms(self, time):
         """Get delta time between now and a given time.
@@ -193,14 +194,23 @@ class Tetrimino():
                     arcade.draw_rectangle_filled(x, y, 24, 24, WHITE)
                     arcade.draw_rectangle_outline(x, y, 24, 24, BLACK)
 
-    def add_tetrimino_to_grid(self):
+    def lock_down(self):
+        """Enter Lock Down phase where the Tetrimino locks to the grid.
+
+        If the Tetrimino locks down above the Skyline, update the
+        Tetrimino status as locked out of the Matrix.
+
+        """
+        self.locked_out = False
         for i, row in enumerate(reversed(self.shape)):
             for j, block in enumerate(row):
                 y = self.y + i
                 x = self.x + j
 
                 if x != 0 and x != 11 and y != 0 and row[j] != 0:
-                    self._grid[self.y + i][self.x + j] = row[j]
+                    self._grid[y][x] = row[j]
+                    if y >= 21:
+                        self.locked_out = True
 
         self.grid.refresh()
 

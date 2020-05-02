@@ -6,7 +6,7 @@ SCREEN_TITLE = 'Tetris Clone'
 SCALING = 1.0
 
 SIDE_MARGIN = 100
-BOTTOM_MARGIN = 80
+BOTTOM_MARGIN = 40
 
 # Colors
 WHITE = arcade.color.WHITE
