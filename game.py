@@ -17,7 +17,7 @@ class Tetris(arcade.Window):
         self.paused = False
 
         self.grid = Grid()
-        self.t = Tetrimino(Shape.T, self.grid)
+        self.t = None
 
         # Diagnostics
         self.diagnostics = False
@@ -30,6 +30,9 @@ class Tetris(arcade.Window):
         """Handle user keyboard input.
         Q: Quit the game
         D: Diagnostics
+        ESC: Pause the game
+        F1: Pause the game
+        P: Print grid to console
 
         Arguments:
             symbol {int} -- Which key was pressed
@@ -42,9 +45,6 @@ class Tetris(arcade.Window):
         if symbol == arcade.key.ESCAPE:
             self.paused = not self.paused
 
-        if symbol == arcade.key.ENTER:
-            self.t = Tetrimino(random.choice(list(Shape)), self.grid)
-
         if symbol == arcade.key.F1:
             self.paused = not self.paused
 
@@ -53,7 +53,6 @@ class Tetris(arcade.Window):
 
         if symbol == arcade.key.P:
             print(self.grid)
-            print(self.t)
 
         self.t.on_key_press(symbol, modifiers)
 
@@ -75,6 +74,11 @@ class Tetris(arcade.Window):
         """
         if self.paused:
             return
+
+        # When a grid is refreshed, a new random Tetrimino needs to spawn
+        if self.grid.refreshed:
+            self.t = Tetrimino(random.choice(list(Shape)), self.grid)
+            self.grid.refreshed = False
 
         self.t.on_update(delta_time)
 

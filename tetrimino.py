@@ -1,4 +1,5 @@
 import arcade
+from datetime import datetime
 from enum import Enum
 
 from constants import SIDE_MARGIN, BOTTOM_MARGIN, WHITE, BLACK
@@ -43,12 +44,13 @@ class Tetrimino():
         self._grid = grid._grid
         self.grid = grid
 
+        self.move_timer = datetime.now()
+        self.lock_timer = None
+
         # Initial position (Temporary until spawning implemented)
         self.x = 4
-        self.y = 15
+        self.y = 20
 
-        self.left_pressed = False
-        self.right_pressed = False
         self.down_pressed = False
 
     def on_key_press(self, symbol: int, modifiers: int):
@@ -65,11 +67,7 @@ class Tetrimino():
             symbol {int} -- Which key was pressed
             modifiers {int} -- Which modifiers were pressed
         """
-        if symbol == arcade.key.LEFT:
-            self.left_pressed = True
-        elif symbol == arcade.key.RIGHT:
-            self.right_pressed = True
-        elif symbol == arcade.key.DOWN:
+        if symbol == arcade.key.DOWN:
             self.down_pressed = True
         elif symbol == arcade.key.UP:
             self.rotate_clockwise()
@@ -88,13 +86,13 @@ class Tetrimino():
             modifiers {int} -- Which modifiers were pressed
         """
         if symbol == arcade.key.LEFT:
-            self.left_pressed = False
+            self.move_left()
         elif symbol == arcade.key.RIGHT:
-            self.right_pressed = False
+            self.move_right()
         elif symbol == arcade.key.DOWN:
             self.down_pressed = False
         elif symbol == arcade.key.SPACE:
-            self.add_tetrimino_to_grid()
+            print('Hard Drop')
 
     def move_left(self):
         """Move X coordinate of tetrimino location to the left."""
@@ -113,6 +111,8 @@ class Tetrimino():
         new_x, new_y = self.x, self.y - 1
         if not self.is_collision_on_move(new_x, new_y):
             self.x, self.y = new_x, new_y
+        elif not self.lock_timer:
+            self.lock_timer = datetime.now()
 
     def rotate_clockwise(self):
         """Rotate the tetrimino clockwise."""
@@ -160,18 +160,34 @@ class Tetrimino():
         Arguments:
             delta_time {float} -- Time since the last update
         """
-        if self.left_pressed:
-            self.move_left()
-        if self.right_pressed:
-            self.move_right()
         if self.down_pressed:
             self.move_down()
+
+        if self.lock_timer:
+            if self.time_delta_ms(self.lock_timer) >= 500:
+                self.add_tetrimino_to_grid()
+                self.lock_timer = None
+
+        if self.time_delta_ms(self.move_timer) >= 1000:
+            self.move_down()
+            self.move_timer = datetime.now()
+
+    def time_delta_ms(self, time):
+        """Get delta time between now and a given time.
+
+        Arguments:
+            time {float} -- Time to compare against current time
+
+        Returns:
+            float -- The delta time in milliseconds
+        """
+        return (datetime.now() - time).total_seconds() * 1000
 
     def draw(self):
         """Draw the tetrimino."""
         for i, row in enumerate(reversed(self.shape)):
-            for j, column in enumerate(row):
-                if column == 1:
+            for j, block in enumerate(row):
+                if block == 1 and (self.y + i) < 21:
                     x = SIDE_MARGIN + (j + self.x) * 24
                     y = BOTTOM_MARGIN + (i + self.y) * 24
                     arcade.draw_rectangle_filled(x, y, 24, 24, WHITE)
@@ -179,7 +195,7 @@ class Tetrimino():
 
     def add_tetrimino_to_grid(self):
         for i, row in enumerate(reversed(self.shape)):
-            for j, column in enumerate(row):
+            for j, block in enumerate(row):
                 y = self.y + i
                 x = self.x + j
 
