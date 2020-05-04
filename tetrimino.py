@@ -53,6 +53,7 @@ class Tetrimino():
         self.grid = grid
 
         self.down_pressed = False
+        self.hard_drop = False
 
         # Timers
         self.move_down_timer = datetime.now()
@@ -99,13 +100,15 @@ class Tetrimino():
             modifiers {int} -- Which modifiers were pressed
         """
         if symbol == arcade.key.LEFT:
-            self.move_left()
+            if not self.hard_drop:
+                self.move_left()
         elif symbol == arcade.key.RIGHT:
-            self.move_right()
+            if not self.hard_drop:
+                self.move_right()
         elif symbol == arcade.key.DOWN:
             self.down_pressed = False
         elif symbol == arcade.key.SPACE:
-            print('Hard Drop')
+            self.hard_drop = True
 
     def move_left(self):
         """Move X coordinate of tetrimino location to the left."""
@@ -185,12 +188,13 @@ class Tetrimino():
         Arguments:
             delta_time {float} -- Time since the last update
         """
-        if self.down_pressed:
+        if self.down_pressed or self.hard_drop:
             self.move_down()
 
         if self.lock_down_timer:
             if self.time_delta_ms(self.lock_down_timer) >= 500:
                 self.lock_down()
+                self.hard_drop = False
                 self.lock_down_timer = None
 
         if self.time_delta_ms(self.move_down_timer) >= 1000:
