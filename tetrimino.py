@@ -2,45 +2,53 @@ import arcade
 from datetime import datetime
 from enum import Enum
 
-from constants import SIDE_MARGIN, BOTTOM_MARGIN, WHITE, BLACK
+from constants import SIDE_MARGIN, BOTTOM_MARGIN, COLORS, BLACK
 
 
 class Shape(Enum):
-    O = [[0, 1, 1],
-         [0, 1, 1],
-         [0, 0, 0]]
+    O = ([[0, 2, 2],
+          [0, 2, 2],
+          [0, 0, 0]],
+         2)
 
-    I = [[0, 0, 0, 0],
-         [1, 1, 1, 1],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]]
+    I = ([[0, 0, 0, 0],
+          [3, 3, 3, 3],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0]],
+         3)
 
-    T = [[0, 1, 0],
-         [1, 1, 1],
-         [0, 0, 0]]
+    T = ([[0, 4, 0],
+          [4, 4, 4],
+          [0, 0, 0]],
+         4)
 
-    L = [[0, 0, 1],
-         [1, 1, 1],
-         [0, 0, 0]]
+    L = ([[0, 0, 5],
+          [5, 5, 5],
+          [0, 0, 0]],
+         5)
 
-    J = [[1, 0, 0],
-         [1, 1, 1],
-         [0, 0, 0]]
+    J = ([[6, 0, 0],
+          [6, 6, 6],
+          [0, 0, 0]],
+         6)
 
-    S = [[0, 1, 1],
-         [1, 1, 0],
-         [0, 0, 0]]
+    S = ([[0, 7, 7],
+          [7, 7, 0],
+          [0, 0, 0]],
+         7)
 
-    Z = [[1, 1, 0],
-         [0, 1, 1],
-         [0, 0, 0]]
+    Z = ([[8, 8, 0],
+          [0, 8, 8],
+          [0, 0, 0]],
+         8)
 
 
 class Tetrimino():
 
     def __init__(self, shape, grid):
         """Initialize the tetrimino."""
-        self.shape = shape.value
+        self.shape = shape.value[0]
+        self.color = shape.value[1]
         self._grid = grid._grid
         self.grid = grid
 
@@ -148,7 +156,9 @@ class Tetrimino():
         """
         for i, row in enumerate(reversed(self.shape)):
             for j, column in enumerate(row):
-                if self._grid[new_y + i][new_x + j] + row[j] >= 2:
+                matrix_value = self._grid[new_y + i][new_x + j]
+                col_sum = matrix_value + row[j]
+                if col_sum != self.color and col_sum != matrix_value:
                     return True
         return False
 
@@ -163,7 +173,9 @@ class Tetrimino():
         """
         for i, row in enumerate(reversed(new_shape)):
             for j, column in enumerate(row):
-                if self._grid[self.y + i][self.x + j] + row[j] >= 2:
+                matrix_value = self._grid[self.y + i][self.x + j]
+                col_sum = matrix_value + row[j]
+                if col_sum != self.color and col_sum != matrix_value:
                     return True
         return False
 
@@ -200,11 +212,21 @@ class Tetrimino():
         """Draw the tetrimino."""
         for i, row in enumerate(reversed(self.shape)):
             for j, block in enumerate(row):
-                if block == 1 and (self.y + i) < 21:
+                if block > 1 and (self.y + i) < 21:
                     x = SIDE_MARGIN + (j + self.x) * 24
                     y = BOTTOM_MARGIN + (i + self.y) * 24
-                    arcade.draw_rectangle_filled(x, y, 24, 24, WHITE)
-                    arcade.draw_rectangle_outline(x, y, 24, 24, BLACK)
+                    arcade.draw_rectangle_filled(
+                        center_x=x,
+                        center_y=y,
+                        width=24,
+                        height=24,
+                        color=COLORS[self.color])
+                    arcade.draw_rectangle_outline(
+                        center_x=x,
+                        center_y=y,
+                        width=24,
+                        height=24,
+                        color=BLACK)
 
     def lock_down(self):
         """Enter Lock Down phase where the Tetrimino locks to the grid.

@@ -1,6 +1,6 @@
 import arcade
 
-from constants import SIDE_MARGIN, BOTTOM_MARGIN, WHITE_SMOKE, DARK_GRAY, BLACK
+from constants import SIDE_MARGIN, BOTTOM_MARGIN, COLORS, DARK_GRAY, BLACK
 
 
 class Grid():
@@ -22,9 +22,9 @@ class Grid():
                         self._grid[i][j] = 1
                         # Color in left, bottom and right borders
                         self.create_border_rect(x, y)
-                    elif self._grid[i][j] == 1:
+                    elif self._grid[i][j] > 1:
                         # Color in any game pieces on the board
-                        self.create_game_piece_rect(x, y)
+                        self.create_game_piece_rect(x, y, self._grid[i][j])
                     self.create_grid_rect(x, y)
         if self.check_for_line_clear():
             self.refresh()
@@ -48,13 +48,13 @@ class Grid():
                         color=DARK_GRAY)
         self.rect_list.append(rect)
 
-    def create_game_piece_rect(self, x, y):
+    def create_game_piece_rect(self, x, y, color):
         rect = arcade.create_rectangle_filled(
                         center_x=x,
                         center_y=y,
                         width=24,
                         height=24,
-                        color=WHITE_SMOKE)
+                        color=COLORS[color])
         self.rect_list.append(rect)
 
     def create_grid_rect(self, x, y):
