@@ -14,10 +14,14 @@ class Tetris(arcade.Window):
         super().__init__(width, height, title)
         arcade.set_background_color(arcade.color.GRAY)
 
+        # Game State
         self.paused = False
         self.game_over = False
 
+        # Game Objects
         self.grid = Grid()
+        self.tetrimino_bag = random.sample(list(Shape), len(Shape))
+        self.t_index = 0
         self.t = None
 
         # Diagnostics
@@ -83,7 +87,7 @@ class Tetris(arcade.Window):
         if self.grid.refreshed:
             if self.t and self.t.locked_out:
                 self.game_over = True
-            self.t = Tetrimino(random.choice(list(Shape)), self.grid)
+            self.t = self.get_next_tetrimino()
             if self.t.blocked_out:
                 self.game_over = True
             self.grid.refreshed = False
@@ -95,7 +99,6 @@ class Tetris(arcade.Window):
 
     def on_draw(self):
         """Draw all game objects."""
-
         # Start timing how long this takes
         draw_start_time = timeit.default_timer()
 
@@ -137,6 +140,15 @@ class Tetris(arcade.Window):
                                  12)
 
         self.draw_time = timeit.default_timer() - draw_start_time
+
+    def get_next_tetrimino(self):
+        """Retrieve the next random tetrimino using the "bag" system."""
+        t = Tetrimino(self.tetrimino_bag[self.t_index], self.grid)
+        self.t_index += 1
+        if self.t_index == len(Shape):
+            self.t_index = 0
+            self.tetrimino_bag = random.sample(list(Shape), len(Shape))
+        return t
 
     def trigger_game_over(self):
         """Game Over."""
