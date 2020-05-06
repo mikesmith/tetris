@@ -1,8 +1,6 @@
 import arcade
 from datetime import datetime
 
-from shape import Shape
-
 from constants import SIDE_MARGIN, BOTTOM_MARGIN, COLORS, BLACK
 
 

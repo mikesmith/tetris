@@ -7,6 +7,7 @@ class Grid():
 
     def __init__(self):
         self._grid = [[0]*12 for y in range(24)]
+        self.lines_cleared = 0
         self.refreshed = False
         self.refresh()
 
@@ -37,6 +38,7 @@ class Grid():
                 self._grid.append([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
                 self._grid.pop(i)
                 num_cleared += 1
+        self.lines_cleared += num_cleared
         return num_cleared
 
     def create_border_rect(self, x, y):

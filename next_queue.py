@@ -33,7 +33,7 @@ class NextQueue():
 
         for i, row in enumerate(reversed(self.t_next.value[0])):
             for j, block in enumerate(row):
-                if self.t_next.value[0][i][j] > 1:
+                if block > 1:
                     x = SIDE_MARGIN + NEXT_QUEUE_X_OFFSET + (j) * 24 + 12
                     y = BOTTOM_MARGIN + NEXT_QUEUE_Y_OFFSET + (i) * 24
 

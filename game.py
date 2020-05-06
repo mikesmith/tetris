@@ -7,7 +7,8 @@ from shape import Shape
 from tetrimino import Tetrimino
 from next_queue import NextQueue
 
-from constants import SCALING, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_TITLE
+from constants import (SCALING, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_TITLE,
+                       NEXT_QUEUE_CX, NEXT_QUEUE_CY,)
 
 
 class Tetris(arcade.Window):
@@ -20,6 +21,13 @@ class Tetris(arcade.Window):
         # Game State
         self.paused = False
         self.game_over = False
+
+        # Game Stats
+        self.level = 1
+        self.level_line_counter = 0
+        self.prev_lines_cleared = 0
+        self.lines_cleared = 0
+        self.points = 0
 
         # Game Objects
         self.grid = Grid()
@@ -94,6 +102,9 @@ class Tetris(arcade.Window):
             self.t = self.get_next_tetrimino()
             if self.t.blocked_out:
                 self.game_over = True
+
+            self.calculate_points(self.grid.lines_cleared)
+            self.grid.lines_cleared = 0
             self.grid.refreshed = False
 
         self.t.on_update(delta_time)
@@ -118,6 +129,25 @@ class Tetris(arcade.Window):
         self.grid.draw()
         self.t.draw()
         self.next_queue.draw()
+
+        arcade.draw_text(f'Level: {self.level}',
+                         NEXT_QUEUE_CX,
+                         NEXT_QUEUE_CY - 40,
+                         arcade.color.BLACK,
+                         12,
+                         align='center')
+        arcade.draw_text(f'Lines Cleared: {self.lines_cleared}',
+                         NEXT_QUEUE_CX,
+                         NEXT_QUEUE_CY - 60,
+                         arcade.color.BLACK,
+                         12,
+                         align='center')
+        arcade.draw_text(f'Score: {self.points}',
+                         NEXT_QUEUE_CX,
+                         NEXT_QUEUE_CY - 80,
+                         arcade.color.BLACK,
+                         12,
+                         align='center')
 
         if self.paused:
             arcade.draw_text("PAUSED",
@@ -156,6 +186,31 @@ class Tetris(arcade.Window):
 
         self.next_queue.update_next_queue(self.tetrimino_bag[self.t_index])
         return t
+
+    def calculate_points(self, lines):
+        """Update score with given number of lines cleared.
+
+        Arguments:
+            lines {int} -- Number of lines cleared in latest grid refresh
+        """
+        self.lines_cleared += lines
+        if lines == 1:
+            self.points += 100 * self.level
+        elif lines == 2:
+            self.points += 300 * self.level
+        elif lines == 3:
+            self.points += 500 * self.level
+        elif lines == 4:
+            self.points += 800 * self.level
+
+        self.level_line_counter += lines
+        if self.level_line_counter >= 10:
+            self.level += 1
+            self.level_line_counter -= 10
+
+        if self.prev_lines_cleared == 4 and lines == 4:
+            self.points += 400  # B2B Bonus 0.5 of Tetris points
+        self.prev_lines_cleared = lines
 
     def trigger_game_over(self):
         """Game Over."""
