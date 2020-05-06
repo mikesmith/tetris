@@ -1,46 +1,9 @@
 import arcade
 from datetime import datetime
-from enum import Enum
+
+from shape import Shape
 
 from constants import SIDE_MARGIN, BOTTOM_MARGIN, COLORS, BLACK
-
-
-class Shape(Enum):
-    O = ([[0, 2, 2],
-          [0, 2, 2],
-          [0, 0, 0]],
-         2)
-
-    I = ([[0, 0, 0, 0],
-          [3, 3, 3, 3],
-          [0, 0, 0, 0],
-          [0, 0, 0, 0]],
-         3)
-
-    T = ([[0, 4, 0],
-          [4, 4, 4],
-          [0, 0, 0]],
-         4)
-
-    L = ([[0, 0, 5],
-          [5, 5, 5],
-          [0, 0, 0]],
-         5)
-
-    J = ([[6, 0, 0],
-          [6, 6, 6],
-          [0, 0, 0]],
-         6)
-
-    S = ([[0, 7, 7],
-          [7, 7, 0],
-          [0, 0, 0]],
-         7)
-
-    Z = ([[8, 8, 0],
-          [0, 8, 8],
-          [0, 0, 0]],
-         8)
 
 
 class Tetrimino():

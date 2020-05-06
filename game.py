@@ -2,9 +2,12 @@ import arcade
 import timeit
 import random
 
-from constants import SCALING, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_TITLE
 from grid import Grid
-from tetrimino import Tetrimino, Shape
+from shape import Shape
+from tetrimino import Tetrimino
+from next_queue import NextQueue
+
+from constants import SCALING, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_TITLE
 
 
 class Tetris(arcade.Window):
@@ -23,6 +26,7 @@ class Tetris(arcade.Window):
         self.tetrimino_bag = random.sample(list(Shape), len(Shape))
         self.t_index = 0
         self.t = None
+        self.next_queue = NextQueue()
 
         # Diagnostics
         self.diagnostics = False
@@ -113,6 +117,7 @@ class Tetris(arcade.Window):
 
         self.grid.draw()
         self.t.draw()
+        self.next_queue.draw()
 
         if self.paused:
             arcade.draw_text("PAUSED",
@@ -148,6 +153,8 @@ class Tetris(arcade.Window):
         if self.t_index == len(Shape):
             self.t_index = 0
             self.tetrimino_bag = random.sample(list(Shape), len(Shape))
+
+        self.next_queue.update_next_queue(self.tetrimino_bag[self.t_index])
         return t
 
     def trigger_game_over(self):
