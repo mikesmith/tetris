@@ -178,7 +178,7 @@ class Tetris(arcade.Window):
 
     def get_next_tetrimino(self):
         """Retrieve the next random tetrimino using the "bag" system."""
-        t = Tetrimino(self.tetrimino_bag[self.t_index], self.grid)
+        t = Tetrimino(self.tetrimino_bag[self.t_index], self.grid, self.level)
         self.t_index += 1
         if self.t_index == len(Shape):
             self.t_index = 0

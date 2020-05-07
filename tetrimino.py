@@ -6,12 +6,13 @@ from constants import SIDE_MARGIN, BOTTOM_MARGIN, COLORS, BLACK
 
 class Tetrimino():
 
-    def __init__(self, shape, grid):
+    def __init__(self, shape, grid, level):
         """Initialize the tetrimino."""
         self.shape = shape.value[0]
         self.color = shape.value[1]
         self._grid = grid._grid
         self.grid = grid
+        self.level = level
 
         self.down_pressed = False
         self.hard_drop = False
@@ -70,6 +71,10 @@ class Tetrimino():
             self.down_pressed = False
         elif symbol == arcade.key.SPACE:
             self.hard_drop = True
+
+    def speed(self, level):
+        n = level - 1
+        return 1000 * (0.8 - (n * 0.007)) ** n
 
     def move_left(self):
         """Move X coordinate of tetrimino location to the left."""
@@ -158,7 +163,7 @@ class Tetrimino():
                 self.hard_drop = False
                 self.lock_down_timer = None
 
-        if self.time_delta_ms(self.move_down_timer) >= 1000:
+        if self.time_delta_ms(self.move_down_timer) >= self.speed(self.level):
             self.move_down()
             self.move_down_timer = datetime.now()
 
