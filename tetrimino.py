@@ -1,6 +1,8 @@
 import arcade
 from datetime import datetime
 
+from shape import Shape
+
 from constants import SIDE_MARGIN, BOTTOM_MARGIN, COLORS, BLACK
 
 
@@ -8,6 +10,17 @@ class Tetrimino():
 
     def __init__(self, shape, grid, level):
         """Initialize the tetrimino."""
+
+        # Initialize Sounds
+        self.fall_sound = arcade.load_sound('sounds/PieceFall.ogg')
+        self.move_sound = arcade.load_sound('sounds/PieceMoveLR.ogg')
+        self.rotate_sound = arcade.load_sound('sounds/PieceRotateLR.ogg')
+        self.rotate_fail = arcade.load_sound('sounds/PieceRotateFail.ogg')
+        self.lockdown_sound = arcade.load_sound('sounds/PieceLockdown.ogg')
+        self.touchdown_sound = arcade.load_sound('sounds/PieceTouchDown.ogg')
+        self.hard_drop_sound = arcade.load_sound('sounds/PieceHardDrop.ogg')
+
+        # Initialize tetrimino values
         self.shape = shape.value[0]
         self.color = shape.value[1]
         self._grid = grid._grid
@@ -17,13 +30,20 @@ class Tetrimino():
         self.down_pressed = False
         self.hard_drop = False
 
+        self.hard_drop_start = 0
+        self.hard_drop_lock = 0
+        self.soft_drop_start = 0
+        self.soft_drop_lock = 0
+
         # Timers
         self.move_down_timer = datetime.now()
         self.lock_down_timer = None
 
         # Initial Position
         self.x = 4
-        self.y = 20
+        self.y = 19
+        if shape == Shape.I:
+            self.y = 18
 
         # Failure flags
         self.locked_out = False
@@ -45,6 +65,7 @@ class Tetrimino():
         """
         if symbol == arcade.key.DOWN:
             self.down_pressed = True
+            self.soft_drop_start = self.y
         elif symbol == arcade.key.UP:
             self.rotate_clockwise()
         elif symbol == arcade.key.X:
@@ -69,10 +90,22 @@ class Tetrimino():
                 self.move_right()
         elif symbol == arcade.key.DOWN:
             self.down_pressed = False
+            self.soft_drop_start = 0
         elif symbol == arcade.key.SPACE:
             self.hard_drop = True
+            arcade.play_sound(self.hard_drop_sound)
+            self.hard_drop_start = self.y
 
     def speed(self, level):
+        """Calculate fall speed of the tetrimino.
+
+        Arguments:
+            level {int} -- The current level
+
+        Returns:
+            float -- The time in ms between each block movement
+
+        """
         n = level - 1
         return 1000 * (0.8 - (n * 0.007)) ** n
 
@@ -81,30 +114,44 @@ class Tetrimino():
         new_x, new_y = self.x - 1, self.y
         if not self.is_collision_on_move(new_x, new_y):
             self.x, self.y = new_x, new_y
+            arcade.play_sound(self.move_sound)
 
     def move_right(self):
         """Move X coordinate of tetrimino location to the right."""
         new_x, new_y = self.x + 1, self.y
         if not self.is_collision_on_move(new_x, new_y):
             self.x, self.y = new_x, new_y
+            arcade.play_sound(self.move_sound)
 
     def move_down(self):
         """Move Y coordinate of tetrimino location down."""
         new_x, new_y = self.x, self.y - 1
         if not self.is_collision_on_move(new_x, new_y):
             self.x, self.y = new_x, new_y
+            arcade.play_sound(self.fall_sound)
         elif not self.lock_down_timer:
             self.lock_down_timer = datetime.now()
+            self.soft_drop_lock = self.soft_drop_start - self.y
+            self.hard_drop_lock = self.hard_drop_start - self.y
+            arcade.play_sound(self.touchdown_sound)
 
     def rotate_clockwise(self):
         """Rotate the tetrimino clockwise."""
         shape_attempt = list(zip(*reversed(self.shape)))
         if not self.is_collision_on_rotate(shape_attempt):
             self.shape = shape_attempt
+            arcade.play_sound(self.rotate_sound)
+        else:
+            arcade.play_sound(self.rotate_fail)
 
     def rotate_counter_clockwise(self):
         """Rotate the tetrimino counter-clockwise."""
-        self.shape = list(reversed(list(zip(*self.shape))))
+        shape_attempt = list(reversed(list(zip(*self.shape))))
+        if not self.is_collision_on_rotate(shape_attempt):
+            self.shape = shape_attempt
+            arcade.play_sound(self.rotate_sound)
+        else:
+            arcade.play_sound(self.rotate_fail)
 
     def is_blocked_out(self):
         """Check if Tetrimino is colliding in current position.
@@ -160,7 +207,6 @@ class Tetrimino():
         if self.lock_down_timer:
             if self.time_delta_ms(self.lock_down_timer) >= 500:
                 self.lock_down()
-                self.hard_drop = False
                 self.lock_down_timer = None
 
         if self.time_delta_ms(self.move_down_timer) >= self.speed(self.level):
@@ -216,6 +262,7 @@ class Tetrimino():
                     if y >= 21:
                         self.locked_out = True
 
+        arcade.play_sound(self.lockdown_sound)
         self.grid.refresh()
 
     def __str__(self):

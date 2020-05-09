@@ -18,6 +18,13 @@ class Tetris(arcade.Window):
         super().__init__(width, height, title)
         arcade.set_background_color(arcade.color.GRAY)
 
+        # Sounds
+        self.single_clear_sound = arcade.load_sound('sounds/ClearSingle.ogg')
+        self.double_clear_sound = arcade.load_sound('sounds/ClearDouble.ogg')
+        self.triple_clear_sound = arcade.load_sound('sounds/ClearTriple.ogg')
+        self.tetris_clear_sound = arcade.load_sound('sounds/ClearQuad.ogg')
+        self.level_up_sound = arcade.load_sound('sounds/LevelUp.ogg')
+
         # Game State
         self.paused = False
         self.game_over = False
@@ -94,17 +101,21 @@ class Tetris(arcade.Window):
         if self.paused:
             return
 
-        # When the Matrix is refreshed, check if Tetrimino is locked out
-        # or create a new piece
         if self.grid.refreshed:
-            if self.t and self.t.locked_out:
-                self.game_over = True
+            if self.t:
+                self.calculate_points(self.grid.lines_cleared,
+                                      self.t.hard_drop_lock,
+                                      self.t.soft_drop_lock)
+                self.grid.lines_cleared = 0
+
+                if self.t.locked_out:
+                    self.game_over = True
+
             self.t = self.get_next_tetrimino()
+
             if self.t.blocked_out:
                 self.game_over = True
 
-            self.calculate_points(self.grid.lines_cleared)
-            self.grid.lines_cleared = 0
             self.grid.refreshed = False
 
         self.t.on_update(delta_time)
@@ -187,29 +198,43 @@ class Tetris(arcade.Window):
         self.next_queue.update_next_queue(self.tetrimino_bag[self.t_index])
         return t
 
-    def calculate_points(self, lines):
+    def calculate_points(self, lines, hard_drop_rows, soft_drop_rows):
         """Update score with given number of lines cleared.
 
         Arguments:
             lines {int} -- Number of lines cleared in latest grid refresh
+            hard_drop_rows {int} -- Number of rows the tetrimino hard dropped
+            soft_drop_rows {int} -- Number of rows the tetrimino soft dropped
         """
         self.lines_cleared += lines
         if lines == 1:
             self.points += 100 * self.level
+            arcade.play_sound(self.single_clear_sound)
         elif lines == 2:
             self.points += 300 * self.level
+            arcade.play_sound(self.double_clear_sound)
         elif lines == 3:
             self.points += 500 * self.level
+            arcade.play_sound(self.triple_clear_sound)
         elif lines == 4:
             self.points += 800 * self.level
+            arcade.play_sound(self.tetris_clear_sound)
 
         self.level_line_counter += lines
         if self.level_line_counter >= 10:
             self.level += 1
             self.level_line_counter -= 10
+            arcade.play_sound(self.level_up_sound)
 
         if self.prev_lines_cleared == 4 and lines == 4:
             self.points += 400  # B2B Bonus 0.5 of Tetris points
+
+        if hard_drop_rows > 0:
+            self.points += (hard_drop_rows * 2)
+
+        if soft_drop_rows > 0:
+            self.points += soft_drop_rows
+
         self.prev_lines_cleared = lines
 
     def trigger_game_over(self):
