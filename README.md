@@ -1,5 +1,7 @@
 Tetris clone written in Python with [Arcade](https://arcade.academy/index.html).
 
+![Tetris Clone](https://user-images.githubusercontent.com/46382795/81491696-00fa6f80-9246-11ea-81ff-ee9e43c297b6.png)
+
 ### Installing
 To get it up and running you will need to install [Arcade](https://arcade.academy/index.html) and PyObjC (for Mac).
 
