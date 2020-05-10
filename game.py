@@ -102,6 +102,9 @@ class Tetris(arcade.Window):
             return
 
         if self.grid.refreshed:
+            # If grid is refreshed and a tetrimino exists, a lock down
+            # occurred. Calculate any points accrued or if the tetrimino
+            # was locked out.
             if self.t:
                 self.calculate_points(self.grid.lines_cleared,
                                       self.t.hard_drop_lock,

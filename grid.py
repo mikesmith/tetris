@@ -12,6 +12,7 @@ class Grid():
         self.refresh()
 
     def refresh(self):
+        """Refresh the grid with the latest positions of all the pieces."""
         self.rect_list = arcade.ShapeElementList()
 
         for i, row in enumerate(self._grid):
@@ -32,6 +33,14 @@ class Grid():
         self.refreshed = True
 
     def check_for_line_clear(self):
+        """Check and update any lines that should be cleared.
+
+        Lines are cleared when the entire row is filled. Remove the row
+        and add a new empty row into the grid.
+
+        Returns:
+            int -- Number of lines cleared
+        """
         num_cleared = 0
         for i in range(1, 21):
             if 0 not in set(self._grid[i]):

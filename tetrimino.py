@@ -104,7 +104,6 @@ class Tetrimino():
 
         Returns:
             float -- The time in ms between each block movement
-
         """
         n = level - 1
         return 1000 * (0.8 - (n * 0.007)) ** n
@@ -249,7 +248,6 @@ class Tetrimino():
 
         If the Tetrimino locks down above the Skyline, update the
         Tetrimino status as locked out of the Matrix.
-
         """
         self.locked_out = False
         for i, row in enumerate(reversed(self.shape)):

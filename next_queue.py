@@ -9,6 +9,9 @@ from constants import (SIDE_MARGIN, BOTTOM_MARGIN, NEXT_QUEUE_CX,
 class NextQueue():
 
     def __init__(self):
+        """Initialize the Next Queue which displays the next Tetrimino that
+        will be in play.
+        """
         self.t_next = None
         self.rects = arcade.ShapeElementList()
         self.minos = arcade.ShapeElementList()
@@ -28,6 +31,11 @@ class NextQueue():
         self.rects.append(self.outline)
 
     def update_next_queue(self, t_next):
+        """Update the next queue box with the next piece in the queue.
+
+        Arguments:
+            t_next {Shape} -- The next shape that will be in play
+        """
         self.minos = arcade.ShapeElementList()
         self.t_next = t_next
 
